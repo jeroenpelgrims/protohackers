@@ -16,9 +16,9 @@ fn main() -> Result<(), std::io::Error> {
         match stream {
             Err(err) => println!("Connection failed: {:?}", err),
             Ok(stream) => {
-                println!("Connection from: {:?}", stream.peer_addr().unwrap());
+                let peer_addr = stream.peer_addr().unwrap();
+                println!("Connection from: {:?}", peer_addr);
                 thread::spawn(move || {
-                    let peer_addr = stream.peer_addr().unwrap();
                     let result = handle_client(stream);
                     if result.is_err() {
                         println!("An error occurred with peer: {}", peer_addr);
