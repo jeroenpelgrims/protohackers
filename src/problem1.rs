@@ -1,6 +1,6 @@
 use num_prime::nt_funcs::is_prime64;
 use serde::{Deserialize, Serialize};
-use std::io::{BufRead, BufReader, Read, Write};
+use std::io::{BufRead, BufReader, Write};
 use std::net::{Ipv4Addr, Shutdown, SocketAddrV4};
 use std::net::{TcpListener, TcpStream};
 use std::thread;
