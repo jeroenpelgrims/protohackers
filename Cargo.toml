@@ -19,6 +19,10 @@ path = "src/problem2.rs"
 name = "problem3"
 path = "src/problem3.rs"
 
+[[bin]]
+name = "problem4"
+path = "src/problem4.rs"
+
 [dependencies]
 lazy_static = "1.5.0"
 num-prime = "0.4.4"
