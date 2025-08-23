@@ -60,36 +60,24 @@ fn handle_connection(stream: TcpStream) {
 fn join(peer_addr: SocketAddr, stream: &TcpStream) -> Result<(), std::io::Error> {
     println!("New connection: {:?}", peer_addr);
 
-    send_message(&stream, "Welcome to budgetchat! What shall I call you?")?;
-    let username = read_message(stream)?;
-
-    let username_pattern = Regex::new(r"^[a-zA-Z0-9]+$").unwrap();
-    if username.trim().is_empty() || !username_pattern.is_match(&username) {
-        return Err(std::io::Error::new(
-            ErrorKind::InvalidInput,
-            "Username cannot be empty or contain invalid characters",
-        ));
-    }
-
+    let username = request_username(stream)?;
     println!("User {} joined from {:?}", username, peer_addr);
 
     let connected_usernames = {
-        let users = JOINED_USERS.lock().unwrap();
-        users
+        let mut users = JOINED_USERS.lock().unwrap();
+        let connected_usernames = users
             .values()
             .map(|u| u.username.clone())
-            .collect::<Vec<_>>()
-    };
-
-    {
-        JOINED_USERS.lock().unwrap().insert(
+            .collect::<Vec<_>>();
+        users.insert(
             peer_addr,
             ConnectionInfo {
                 username: username.clone(),
                 stream: stream.try_clone()?,
             },
         );
-    }
+        connected_usernames
+    };
 
     broadcast_message(
         &peer_addr,
@@ -102,6 +90,21 @@ fn join(peer_addr: SocketAddr, stream: &TcpStream) -> Result<(), std::io::Error>
     )?;
 
     Ok(())
+}
+
+fn request_username(stream: &TcpStream) -> Result<String, std::io::Error> {
+    send_message(&stream, "Welcome to budgetchat! What shall I call you?")?;
+    let username = read_message(stream)?;
+
+    let username_pattern = Regex::new(r"^[a-zA-Z0-9]+$").unwrap();
+    if !username_pattern.is_match(&username) {
+        return Err(std::io::Error::new(
+            ErrorKind::InvalidInput,
+            "Username cannot be empty or contain invalid characters",
+        ));
+    }
+
+    Ok(username)
 }
 
 fn disconnect(stream: &TcpStream) {
